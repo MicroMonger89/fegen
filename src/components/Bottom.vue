@@ -1,0 +1,281 @@
+<template>
+  <Container :backdrop="true" position="top">
+
+    <div id="buttons">
+      <button id="qButton" :class="{ 'active': qActive, 'gcd': this.gcd }" @click="essen" :disabled="qCooldown > 0">
+        <span v-if="qCooldown > 0" class="cooldown">{{ qCooldown }}</span>
+        <span class="key">Q</span>
+      </button>
+      <button id="wButton" :class="{ 'active': wActive, 'gcd': this.gcd }" @click="trinken">
+        <span class="key">W</span>
+      </button>
+      <button id="eButton" :class="{ 'active': eActive, 'gcd': this.gcd }" @click="kotzen" :disabled="!kotzable">
+        <span class="key">E</span>
+      </button>
+    </div>
+
+    <div id="progress">
+      <Progress label="Magen" :value="platz" color="orange" />
+      <Progress label="Pegel" :value="pegel" color="#99ccff" :indicator="indicator" />
+      <div v-show="crit" id="crit">!!!</div>
+    </div>
+
+  </Container>
+</template>
+
+<script>
+import Progress from './Progress'
+import Container from './Container'
+
+export default {
+  name: 'Bottom',
+  props: ['userid', 'restService'],
+  components: { Progress, Container },
+  data () {
+    return {
+      platz: 0,
+      pegel: 0,
+      gcd: false,
+      qActive: false,
+      wActive: false,
+      eActive: false,
+      qInterval: "",
+      qCooldown: 0,
+      crit: false
+    }
+  },
+  created: function () {
+    window.addEventListener('keydown', (event) => {
+      if (['q', 'w', 'e'].some(key => key === event.key)) {
+        this[`${event.key}Active`] = true
+        setTimeout(() => this[`${event.key}Active`] = false, 100) 
+        document.querySelector(`#${event.key}Button`).click()
+      }
+    })
+  },
+  beforeDestroy: function () {
+    window.removeEventListener('keydown', this.onkey)
+  },
+  computed: {
+    indicator () {
+      return this.platz / 2 + 50
+    },
+    kotzable () {
+      return this.pegel >= this.indicator
+    }
+  },
+  methods: {
+    essen () {
+      if (!this.gcd && !this.qInterval) {
+        this.startGcd()
+        this.startEssenCooldown()
+
+        this.restService.get('add.php', [`userid=${this.userid}`, 'type=1', 'score=3'])
+        
+        this.platz += this.isCrit(15, 40, .3)
+        if (this.platz > 100) this.platz = 100
+      }
+    },
+
+    trinken () {
+      if (!this.gcd) {
+        this.startGcd()
+
+        this.restService.get('add.php', [`userid=${this.userid}`, 'type=0', 'score=1'])
+  
+        this.pegel += this.isCrit(5, 15, .2)
+        if (this.pegel > 100) this.pegel = 100
+      }
+    },
+
+    kotzen () {
+      if (!this.gcd && this.kotzable) {
+        this.startGcd()
+
+        const faktor = Math.floor(this.platz / 10)
+        let amount = 1
+        switch (faktor) {
+          case 3:
+          case 4:
+            amount = 2
+            break
+          case 5:
+          case 6:
+            amount = 3
+            break
+          case 7:
+            amount = 4
+            break
+          case 8:
+            amount = 6
+            break
+          case 9:
+            amount = 8
+            break
+          case 10:
+            amount = 10
+            break
+        }
+
+        this.restService.get('add.php', [`userid=${this.userid}`, 'type=2', `score=${amount * 10}`])
+
+        this.platz = 0
+        this.pegel = 0
+      }
+    },
+
+    startGcd () {
+      this.gcd = true
+      setTimeout(() => this.gcd = false, 1000)
+    },
+
+    startEssenCooldown () {
+      this.qCooldown = 5
+      this.qInterval = setInterval(() => {
+        this.qCooldown -= 1
+        if (this.qCooldown === 0) {
+          clearInterval(this.qInterval)
+          this.qInterval = null
+        }
+      }, 1000)
+    },
+
+    isCrit (min, max, chance) {
+      const crit = Math.random() < chance
+      if (crit) {
+        this.crit = true
+        setTimeout(() => this.crit = false, 1000)
+      }
+      return crit ? max : min
+    }
+  }
+}
+</script>
+
+<style scoped lang="less">
+  & > div {
+    padding: 5px 20px;
+  }
+
+  button {
+    position: relative;
+    transition: all .03s ease-in;
+    outline: none !important;
+    cursor: pointer;
+    width: 50px;
+    height: 50px;
+    margin: 0 5px;
+    border: none;
+    border-radius: 4px;
+    background: #D9C8B4;
+    box-shadow: 0 0 2px rgba(10, 10, 10, .3), 0 2px 4px rgba(10, 10, 10, .2);
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px rgba(black, .5);
+    background-image: url(../assets/icons.png);
+    background-size: 1300%;
+
+    span {
+      position: absolute;
+      &.cooldown {
+        top: 15px;
+        left: 15px;
+        font-size: 20px;
+        text-align: center;
+        width: 20px;
+      }
+      &.key {
+        bottom: 2px;
+        right: 5px;
+      }
+    }
+
+    &.gcd {
+      animation-duration: 1s;
+      animation-name: gcd;
+    }
+
+    &.gcd[disabled] {
+      animation-duration: 1s;
+      animation-name: gcdd;
+    }
+    
+    &.active {
+      transform: scale(.92);
+    }
+
+    &[disabled] {
+      filter: saturate(0);
+    }
+
+    &#qButton {
+      background-position-x: 0px;
+      background-position-y: -100px;
+    }
+    &#wButton {
+      background-position-x: 0px;
+      background-position-y: -50px;
+    }
+    &#eButton {
+      background-position-x: -450px;
+      background-position-y: -150px;
+      &:not([disabled]) {
+        box-shadow: 0 0 2px rgba(black, .8), 0 0 5px 3px red;
+        animation-duration: 0.15s;
+        animation-name: grow;
+      }
+    }
+  }
+
+  #progress {
+    position: relative;
+
+    & > div:first-child {
+      margin-bottom: 5px;
+    }
+
+    label {
+      display: inline-block;
+      width: 50px;
+      text-align: right;
+      padding: 0 10px;
+    }
+
+    progress {
+      display: inline-block;
+      width: 400px;
+    }
+  }
+
+  #crit {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    font-size: 70px;
+    height: 70px;
+    line-height: 70px;
+    font-weight: bold;
+    color: red;
+    text-shadow: 1px 1px rgba(black, .5);
+    animation-duration: 1.1s;
+    animation-name: fadeOut;
+    transform: rotate(10deg);
+  }
+  
+  @keyframes grow {
+    0% { transform: scale(1.15) }
+    100% { transform: scale(1) }
+  }
+  @keyframes gcd {
+    0% { filter: brightness(.1) }
+    100% { filter: brightness(1) }
+  }
+  @keyframes gcdd {
+    0% { filter: brightness(.1) saturate(0) }
+    100% { filter: brightness(1) saturate(0) }
+  }
+  @keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+</style>

@@ -1,0 +1,24 @@
+/* Colors
+#261A17 - Dark
+#D9C8B4 - Med
+#F2E6D8 - Light
+*/
+  
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #261A17;
+  background-image: url(./assets/brown_wood.jpg);
+}
+div{
+  box-sizing: border-box;
+}
