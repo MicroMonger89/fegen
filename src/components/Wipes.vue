@@ -1,9 +1,9 @@
 <template>
   <Container :backdrop="true" position="top">
-    <div class="wipe" v-for="wipe in wipes" :key="wipe.type">
-      <div class="count">{{ wipe.count }}</div>
+    <div class="wipe" v-for="type in types" :key="type">
+      <div class="count">{{ getWipeCount(type) }}</div>
       <div>x</div>
-      <div class="image" :class="getClassByType(wipe.type)"></div>
+      <div class="image" :class="getClassByType(type)"></div>
     </div>
   </Container>
 </template>
@@ -15,7 +15,18 @@ export default {
   name: 'Wipes',
   props: ['wipes'],
   components: { Container },
+  data () {
+    return {
+      types: ['0', '1', '2']
+    }
+  },
   methods: {
+    getWipeCount (type) {
+      if (this.wipes.length > 0) {
+        return this.wipes.find(wipe => wipe.type === type).count
+      }
+      return 0
+    },
     getClassByType (type) {
       switch (type) {
         case '0':
