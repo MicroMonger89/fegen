@@ -5,8 +5,8 @@
       <button id="qButton" :class="{ 'active': qActive, 'gcd': this.gcd }" @click="trinken">
         <span class="key">Q</span>
       </button>
-      <button id="wButton" :class="{ 'active': wActive, 'gcd': this.gcd }" @click="essen" :disabled="qCooldown > 0">
-        <span v-if="qCooldown > 0" class="cooldown">{{ qCooldown }}</span>
+      <button id="wButton" :class="{ 'active': wActive, 'gcd': this.gcd }" @click="essen" :disabled="wCooldown > 0">
+        <span v-if="wCooldown > 0" class="cooldown">{{ wCooldown }}</span>
         <span class="key">W</span>
       </button>
       <button id="eButton" :class="{ 'active': eActive, 'pulse': kotzable, 'gcd': this.gcd }" @click="kotzen" :disabled="!kotzable">
@@ -39,8 +39,8 @@ export default {
       qActive: false,
       wActive: false,
       eActive: false,
-      qInterval: "",
-      qCooldown: 0,
+      wInterval: "",
+      wCooldown: 0,
       crit: false,
       
       // Essen
@@ -56,7 +56,7 @@ export default {
 
       // Kotzen
       multiplikatorKotzen: 10,
-      wertKotzen: null,
+      werteKotzen: new Map([[0, 1], [1, 1], [2, 2], [3, 2], [4, 3], [5, 3], [6, 4], [7, 5], [8, 6], [9, 8], [10, 10]]),
 
       // Scores
       scoreEssen: 3,
@@ -65,6 +65,7 @@ export default {
     }
   },
   created: function () {
+    // ADD GLOBAL WINDOW LISTENER
     window.addEventListener('keydown', (event) => {
       if (['q', 'w', 'e'].some(key => key === event.key)) {
         this[`${event.key}Active`] = true
@@ -72,10 +73,6 @@ export default {
         document.querySelector(`#${event.key}Button`).click()
       }
     })
-    this.wertKotzen = new Map([[0, 1], [1, 1], [2, 2], [3, 2], [4, 3], [5, 3], [6, 4], [7, 5], [8, 6], [9, 8], [10, 10]])
-  },
-  beforeDestroy: function () {
-    window.removeEventListener('keydown', this.onkey)
   },
   computed: {
     indicator () {
@@ -87,42 +84,49 @@ export default {
   },
   methods: {
     essen () {
-      if (!this.gcd && !this.qInterval) {
+      if (!this.gcd && !this.wInterval) {
+        // START CD
         this.startGcd()
         this.startEssenCooldown()
 
-        this.restService.get('add.php', [`userid=${this.userid}`, 'type=1', `score=${this.scoreEssen}`])
-        
+        // CLIENT
         this.platz += this.isCrit(this.kapaEssen, this.kapaEssenCrit, this.critchanceEssen)
         if (this.platz > 100) this.platz = 100
+
+        // SERVER
+        this.restService.get('add.php', [`userid=${this.userid}`, 'type=1', `score=${this.scoreEssen}`])  
       }
     },
 
     trinken () {
       if (!this.gcd) {
+        // START CD
         this.startGcd()
-
+        
+        // CLIENT
         const crit = this.isCrit(this.kapaTrinken, this.kapaTrinkenCrit, this.critchanceTrinken)
+        this.pegel += crit
+        if (this.pegel > 100) this.pegel = 100
+
+        // SERVER
         if (crit === this.kapaTrinkenCrit) {
           this.restService.get('add.php', [`userid=${this.userid}`, 'type=0', `score=${this.scoreTrinken}`])
         }
-        
-        this.pegel += crit
-        if (this.pegel > 100) this.pegel = 100
       }
     },
 
     kotzen () {
       if (!this.gcd && this.kotzable) {
+        // START CD
         this.startGcd()
 
-        const faktor = Math.floor(this.platz / 10)
-        let amount = this.wertKotzen.get(faktor)
-
-        this.restService.get('add.php', [`userid=${this.userid}`, 'type=2', `amount=${amount}`, `score=${amount * this.scoreKotzen}`])
-
+        // CLIENT
         this.platz = 0
         this.pegel = 0
+
+        // SERVER
+        let amount = this.werteKotzen.get(Math.floor(this.platz / 10))
+        this.restService.get('add.php', [`userid=${this.userid}`, 'type=2', `amount=${amount}`, `score=${amount * this.scoreKotzen}`])
       }
     },
 
@@ -132,12 +136,12 @@ export default {
     },
 
     startEssenCooldown () {
-      this.qCooldown = this.cooldownEssen
-      this.qInterval = setInterval(() => {
-        this.qCooldown -= 1
-        if (this.qCooldown === 0) {
-          clearInterval(this.qInterval)
-          this.qInterval = null
+      this.wCooldown = this.cooldownEssen
+      this.wInterval = setInterval(() => {
+        this.wCooldown -= 1
+        if (this.wCooldown === 0) {
+          clearInterval(this.wInterval)
+          this.wInterval = null
         }
       }, 1000)
     },
@@ -201,10 +205,6 @@ export default {
     
     &.active {
       transform: scale(.92);
-    }
-
-    &.pulse {
-      
     }
 
     &[disabled] {
