@@ -28,9 +28,9 @@ export default {
       times: null,
 
       // Scores
-      scoreEssen: 3,
       scoreTrinken: 1,
-      scoreKotzen: 10
+      scoreEssen: 2,
+      scoreKotzen: 4
     }
   },
   created () {

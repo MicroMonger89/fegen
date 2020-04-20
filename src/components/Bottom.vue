@@ -21,7 +21,7 @@
     </div>
 
     <div v-if="kotz" id="kotz">
-      <span :class="wobbleClass">{{ kotzAmount }}</span>
+      <span :class="wobbleClass">{{ kotzAmount * scoreKotzen }}</span>
     </div>
 
   </Container>
@@ -52,22 +52,21 @@ export default {
       // Essen
       cooldownEssen: 5,
       kapaEssen: 15,
-      kapaEssenCrit: 30,
+      kapaEssenCrit: 40,
       critchanceEssen: .3,
 
       // Trinken
       kapaTrinken: 5,
       kapaTrinkenCrit: 10,
-      critchanceTrinken: .3,
+      critchanceTrinken: .15,
 
       // Kotzen
-      multiplikatorKotzen: 10,
-      werteKotzen: new Map([[0, 1], [1, 1], [2, 2], [3, 2], [4, 3], [5, 3], [6, 4], [7, 5], [8, 6], [9, 8], [10, 10]]),
+      werteKotzen: new Map([[0, 1], [1, 1], [2, 1], [3, 2], [4, 2], [5, 3], [6, 3], [7, 4], [8, 5], [9, 6], [10, 8]]),
 
       // Scores
-      scoreEssen: 3,
       scoreTrinken: 1,
-      scoreKotzen: 10
+      scoreEssen: 2,
+      scoreKotzen: 4
     }
   },
   created: function () {
