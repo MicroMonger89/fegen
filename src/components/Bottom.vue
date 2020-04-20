@@ -20,7 +20,7 @@
       <div v-show="crit" id="crit">!!!</div>
     </div>
 
-    <div v-if="true" id="kotz">
+    <div v-if="kotz" id="kotz">
       <span :class="wobbleClass">{{ kotzAmount }}</span>
     </div>
 
