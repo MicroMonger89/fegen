@@ -1,6 +1,6 @@
 <template>
   <div class="progressbar">
-    <div class="label">{{ label }}:</div>
+    <div class="label">{{ label }}</div>
     <div class="outer" :class="{ full: value === 100 }">
       <div class="inner" :style="{ width: value + '%', background: color }"></div>
       <span v-if="indicator" class="indicator" :style="{ left: indicatorPosition + 'px' }"></span>

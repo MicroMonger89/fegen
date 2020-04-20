@@ -1,7 +1,7 @@
 <template>
   <Container :backdrop="true" position="bottom">
     <div class="player" v-for="user in users" :key="user.id">
-      <div class="image" :id="user.id"></div>
+      <div class="image" :class="{ active: user.id === currentUser }" :id="user.id"></div>
       <p id="name">{{ user.id }}</p>
       <p id="punkte">{{ user.score }}</p>
     </div>
@@ -13,7 +13,7 @@ import Container from './Container'
 
 export default {
   name: 'Top',
-  props: ['users'],
+  props: ['users', 'currentUser'],
   components: { Container }
 }
 </script>
@@ -33,8 +33,13 @@ export default {
       border-radius: 100px;
       background-size: 105%;
       background-position: center;
-      border: 3px solid #D9C8B4;
+      border: 4px solid #D9C8B4;
       box-shadow: 0 0 2px rgba(black, .3), 0 2px 4px rgba(black, .3);
+      margin-bottom: 4px;
+
+      &.active {
+        border-color: yellowgreen;
+      }
 
       &#arek {
         background-image: url(../assets/arek.png);

@@ -4,10 +4,9 @@
       <div v-for="dirt in dirts" 
         :key="dirt.id" 
         class="dirt" 
-        :class="getClassByType(dirt.type)" 
+        :class="[ getClassByType(dirt.type), { fadeInDown: getFade(dirt.id) }]" 
         :style="{ top: getTop(dirt.id), left: getLeft(dirt.id), opacity: getOpacity(dirt) }"
         @click="click(dirt)">
-        <!-- {{ dirt.id }} -->
       </div>
     </div>
   </div>
@@ -25,14 +24,20 @@ export default {
       interval: null,
       tops: null,
       lefts: null,
-      clicks: null
+      clicks: null,
+      times: null,
+
+      // Scores
+      scoreEssen: 3,
+      scoreTrinken: 1,
+      scoreKotzen: 10
     }
   },
   created () {
     this.tops = new Map()
     this.lefts = new Map()
     this.clicks = new Map()
-    // this.update()
+    this.times = new Map()
   },
   destroyed () {
     clearInterval(this.interval)
@@ -50,6 +55,13 @@ export default {
       }
       return this.lefts.get(id) + '%'
     },
+    getFade (id) {
+      if (!this.times.get(id)) {
+        this.times.set(id, new Date())
+      }
+      const d = new Date()
+      return d - this.times.get(id) < 1100
+    },
     click (dirt) {
       const { id, type } = dirt
       if (this.clicks.get(id) === undefined) {
@@ -60,7 +72,7 @@ export default {
       if (this.clicks.get(id) === 0){
         this.tops.set(id, '-100')
         this.lefts.set(id, '-100')
-        this.restService.get('remove.php', [`dirtid=${id}`])
+        this.restService.get('remove.php', [`dirtid=${id}`, `clicks=${this.getClicksByType(type)}`])
       }
     },
     getOpacity (dirt) {
@@ -82,11 +94,11 @@ export default {
     getClicksByType (type) {
       switch (type) {
         case '0':
-          return 1
+          return this.scoreTrinken
         case '1':
-          return 3
+          return this.scoreEssen
         default:
-          return 10;
+          return this.scoreKotzen;
       }
     }
   }
@@ -95,6 +107,7 @@ export default {
 
 <style scoped lang="less"> 
   .container {
+    cursor: url(../assets/wiper-small.png) 20 60, auto;	
     padding: 20px;
     max-width: 1200px;
     margin: auto;
@@ -105,35 +118,41 @@ export default {
     }
   }
   .dirt {
-    cursor: pointer;
+    cursor: url(../assets/wiper-small.png) 20 60, auto;	
     position: absolute;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    animation-duration: 1s;
-    animation-name: fadeInDown;
     font-size: 24px;
     font-weight: bold;
     text-align: center;
     line-height: 35px;
     color: white;
     text-shadow: 1px 1px black;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+
+    &.fadeInDown {
+      animation-duration: 1s;
+      animation-name: fadeInDown;
+    }
+    &.fleck {
+      width: 60px;
+      height: 30px;
+      background-image: url(../assets/fleck.png);
+    }
+    &.geschirr {
+      width: 90px;
+      height: 40px;
+      background-image: url(../assets/geschirr.png);
+    }
+    &.kotze {
+      width: 100px;
+      height: 40px;
+      background-image: url(../assets/kotze.png);
+    }
+
   }
-  .fleck {
-    width: 60px;
-    height: 30px;
-    background-image: url(../assets/fleck.png);
-  }
-  .geschirr {
-    width: 90px;
-    height: 40px;
-    background-image: url(../assets/geschirr.png);
-  }
-  .kotze {
-    width: 100px;
-    height: 40px;
-    background-image: url(../assets/kotze.png);
-  }
+  
 
   @keyframes fadeInDown {
     0% { opacity: 0; transform: translateY(-100px); }

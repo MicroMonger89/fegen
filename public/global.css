@@ -3,6 +3,11 @@
 #D9C8B4 - Med
 #F2E6D8 - Light
 */
+
+@font-face {
+  font-family: Comic;
+  src: url(./fonts/ComicNeue-Regular.ttf);
+}
   
 html,
 body {
@@ -10,7 +15,7 @@ body {
   padding: 0;
   width: 100vw;
   height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: Comic, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 body {
   display: flex;
@@ -21,4 +26,7 @@ body {
 }
 div{
   box-sizing: border-box;
+}
+button {
+  font-family: Comic, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;;
 }

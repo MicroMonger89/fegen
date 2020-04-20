@@ -4,14 +4,15 @@
     <!-- Userauswahl -->
     <div id="user" v-if="!currentUser">
       <h1>Choose wisely</h1>
-      <button v-for="user in users" :key="user" @click="currentUser = user">{{ user}}</button>
+      <button v-for="user in users" :key="user" @click="currentUser = user">{{ user }}</button>
     </div>
 
     <!-- Game -->
     <div v-else>
-      <Top id="top" :users="data.users" />
+      <Top id="top" :users="data.users" :currentUser="currentUser" />
       <Mid id="mid" :dirts="data.dirt" :restService="restService" />
-      <Bottom id="bottom" :userid="currentUser" :restService="restService" />
+      <Bottom v-if="currentUser !== 'arek'" id="bottom" :userid="currentUser" :restService="restService" />
+      <Wipes v-else id="bottom" :wipes="data.wipes" />
     </div>
   </div>
 </template>
@@ -20,11 +21,12 @@
 import Top from './components/Top'
 import Mid from './components/Mid'
 import Bottom from './components/Bottom'
+import Wipes from './components/Wipes'
 import RestService from './services/RestService'
 
 export default {
   name: 'App',
-  components: { Top, Mid, Bottom },
+  components: { Top, Mid, Bottom, Wipes },
   data () {
     return {
       users: ['michi', 'osman', 'marvin', 'arek'],

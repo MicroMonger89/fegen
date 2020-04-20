@@ -2,14 +2,14 @@
   <Container :backdrop="true" position="top">
 
     <div id="buttons">
-      <button id="qButton" :class="{ 'active': qActive, 'gcd': this.gcd }" @click="essen" :disabled="qCooldown > 0">
-        <span v-if="qCooldown > 0" class="cooldown">{{ qCooldown }}</span>
+      <button id="qButton" :class="{ 'active': qActive, 'gcd': this.gcd }" @click="trinken">
         <span class="key">Q</span>
       </button>
-      <button id="wButton" :class="{ 'active': wActive, 'gcd': this.gcd }" @click="trinken">
+      <button id="wButton" :class="{ 'active': wActive, 'gcd': this.gcd }" @click="essen" :disabled="qCooldown > 0">
+        <span v-if="qCooldown > 0" class="cooldown">{{ qCooldown }}</span>
         <span class="key">W</span>
       </button>
-      <button id="eButton" :class="{ 'active': eActive, 'gcd': this.gcd }" @click="kotzen" :disabled="!kotzable">
+      <button id="eButton" :class="{ 'active': eActive, 'pulse': kotzable, 'gcd': this.gcd }" @click="kotzen" :disabled="!kotzable">
         <span class="key">E</span>
       </button>
     </div>
@@ -41,7 +41,27 @@ export default {
       eActive: false,
       qInterval: "",
       qCooldown: 0,
-      crit: false
+      crit: false,
+      
+      // Essen
+      cooldownEssen: 5,
+      kapaEssen: 15,
+      kapaEssenCrit: 30,
+      critchanceEssen: .3,
+
+      // Trinken
+      kapaTrinken: 5,
+      kapaTrinkenCrit: 10,
+      critchanceTrinken: .3,
+
+      // Kotzen
+      multiplikatorKotzen: 10,
+      wertKotzen: null,
+
+      // Scores
+      scoreEssen: 3,
+      scoreTrinken: 1,
+      scoreKotzen: 10
     }
   },
   created: function () {
@@ -52,6 +72,7 @@ export default {
         document.querySelector(`#${event.key}Button`).click()
       }
     })
+    this.wertKotzen = new Map([[0, 1], [1, 1], [2, 2], [3, 2], [4, 3], [5, 3], [6, 4], [7, 5], [8, 6], [9, 8], [10, 10]])
   },
   beforeDestroy: function () {
     window.removeEventListener('keydown', this.onkey)
@@ -70,9 +91,9 @@ export default {
         this.startGcd()
         this.startEssenCooldown()
 
-        this.restService.get('add.php', [`userid=${this.userid}`, 'type=1', 'score=3'])
+        this.restService.get('add.php', [`userid=${this.userid}`, 'type=1', `score=${this.scoreEssen}`])
         
-        this.platz += this.isCrit(15, 40, .3)
+        this.platz += this.isCrit(this.kapaEssen, this.kapaEssenCrit, this.critchanceEssen)
         if (this.platz > 100) this.platz = 100
       }
     },
@@ -81,9 +102,12 @@ export default {
       if (!this.gcd) {
         this.startGcd()
 
-        this.restService.get('add.php', [`userid=${this.userid}`, 'type=0', 'score=1'])
-  
-        this.pegel += this.isCrit(5, 15, .2)
+        const crit = this.isCrit(this.kapaTrinken, this.kapaTrinkenCrit, this.critchanceTrinken)
+        if (crit === this.kapaTrinkenCrit) {
+          this.restService.get('add.php', [`userid=${this.userid}`, 'type=0', `score=${this.scoreTrinken}`])
+        }
+        
+        this.pegel += crit
         if (this.pegel > 100) this.pegel = 100
       }
     },
@@ -93,31 +117,9 @@ export default {
         this.startGcd()
 
         const faktor = Math.floor(this.platz / 10)
-        let amount = 1
-        switch (faktor) {
-          case 3:
-          case 4:
-            amount = 2
-            break
-          case 5:
-          case 6:
-            amount = 3
-            break
-          case 7:
-            amount = 4
-            break
-          case 8:
-            amount = 6
-            break
-          case 9:
-            amount = 8
-            break
-          case 10:
-            amount = 10
-            break
-        }
+        let amount = this.wertKotzen.get(faktor)
 
-        this.restService.get('add.php', [`userid=${this.userid}`, 'type=2', `score=${amount * 10}`])
+        this.restService.get('add.php', [`userid=${this.userid}`, 'type=2', `amount=${amount}`, `score=${amount * this.scoreKotzen}`])
 
         this.platz = 0
         this.pegel = 0
@@ -130,7 +132,7 @@ export default {
     },
 
     startEssenCooldown () {
-      this.qCooldown = 5
+      this.qCooldown = this.cooldownEssen
       this.qInterval = setInterval(() => {
         this.qCooldown -= 1
         if (this.qCooldown === 0) {
@@ -153,9 +155,6 @@ export default {
 </script>
 
 <style scoped lang="less">
-  & > div {
-    padding: 5px 20px;
-  }
 
   button {
     position: relative;
@@ -204,25 +203,30 @@ export default {
       transform: scale(.92);
     }
 
+    &.pulse {
+      
+    }
+
     &[disabled] {
       filter: saturate(0);
     }
 
     &#qButton {
       background-position-x: 0px;
-      background-position-y: -100px;
+      background-position-y: -50px;
     }
     &#wButton {
       background-position-x: 0px;
-      background-position-y: -50px;
+      background-position-y: -100px;
     }
     &#eButton {
       background-position-x: -450px;
       background-position-y: -150px;
       &:not([disabled]) {
         box-shadow: 0 0 2px rgba(black, .8), 0 0 5px 3px red;
-        animation-duration: 0.15s;
-        animation-name: grow;
+        animation-name: pulse;
+        animation-duration: 1s;
+        animation-iteration-count: infinite;
       }
     }
   }
@@ -277,5 +281,10 @@ export default {
   @keyframes fadeOut {
     0% { opacity: 1; }
     100% { opacity: 0; }
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
   }
 </style>
