@@ -29,7 +29,7 @@ export default {
   components: { Top, Mid, Bottom, Wipes },
   data () {
     return {
-      users: ['michi', 'osman', 'marvin', 'arek'],
+      users: ['arek', 'michi', 'osman', 'marvin'],
       currentUser: "",
       interval: undefined,
       data: undefined

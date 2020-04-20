@@ -20,6 +20,10 @@
       <div v-show="crit" id="crit">!!!</div>
     </div>
 
+    <div v-if="true" id="kotz">
+      <span :class="wobbleClass">{{ kotzAmount }}</span>
+    </div>
+
   </Container>
 </template>
 
@@ -42,6 +46,8 @@ export default {
       wInterval: "",
       wCooldown: 0,
       crit: false,
+      kotz: false,
+      kotzAmount: 0,
       
       // Essen
       cooldownEssen: 5,
@@ -80,6 +86,10 @@ export default {
     },
     kotzable () {
       return this.pegel >= this.indicator
+    },
+    wobbleClass () {
+      const werte = new Map([[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 2], [7, 2], [8, 2], [9, 3], [10, 3]])
+      return `wobble${werte.get(this.kotzAmount)}`
     }
   },
   methods: {
@@ -128,6 +138,11 @@ export default {
         // CLIENT
         this.platz = 0
         this.pegel = 0
+
+        // ANIM
+        this.kotzAmount = amount
+        this.kotz = true
+        setTimeout(() => this.kotz = false, 2000)
       }
     },
 
@@ -266,6 +281,37 @@ export default {
     animation-name: fadeOut;
     transform: rotate(10deg);
   }
+
+  #kotz {
+    position: fixed;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    box-shadow: inset 0 0 100px 15px red;
+    animation-duration: 2.1s;
+    animation-name: fadeOut;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    span {
+      font-size: 200px;
+      color: red;
+      text-shadow: 1px 1px 20px rgba(black, .5);
+      transform: rotate(10deg);
+      font-weight: bold;
+      animation-duration: .1s;
+      animation-iteration-count: infinite;
+      &.wobble1 {
+        animation-name: wobble1;
+      }
+      &.wobble2 {
+        animation-name: wobble2;
+      }
+      &.wobble3 {
+        animation-name: wobble3;
+      }
+    }
+  }
   
   @keyframes grow {
     0% { transform: scale(1.15) }
@@ -287,5 +333,23 @@ export default {
     0% { transform: scale(1); }
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
+  }
+  @keyframes wobble1 {
+    0%    { transform: rotate(5deg) translateX( 1px) translateY(-1px); }
+    33%   { transform: rotate(5deg) translateX(-1px) translateY( 1px); }
+    66%   { transform: rotate(5deg) translateX( 1px) translateY( 1px); }
+    100%  { transform: rotate(5deg) translateX(-1px) translateY(-1px); }
+  }
+  @keyframes wobble2 {
+    0%    { transform: rotate(5deg) scale(1.3) translateX( 1px) translateY(-1px); }
+    33%   { transform: rotate(5deg) scale(1.3) translateX(-1px) translateY( 1px); }
+    66%   { transform: rotate(5deg) scale(1.3) translateX( 1px) translateY( 1px); }
+    100%  { transform: rotate(5deg) scale(1.3) translateX(-1px) translateY(-1px); }
+  }
+  @keyframes wobble3 {
+    0%    { transform: rotate(5deg) scale(1.6) translateX( 2px) translateY(-2px); }
+    33%   { transform: rotate(5deg) scale(1.6) translateX(-2px) translateY( 2px); }
+    66%   { transform: rotate(5deg) scale(1.6) translateX( 2px) translateY( 2px); }
+    100%  { transform: rotate(5deg) scale(1.6) translateX(-2px) translateY(-2px); }
   }
 </style>
