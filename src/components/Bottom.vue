@@ -89,12 +89,12 @@ export default {
         this.startGcd()
         this.startEssenCooldown()
 
+        // SERVER
+        this.restService.get('add.php', [`userid=${this.userid}`, 'type=1', `score=${this.scoreEssen}`])  
+
         // CLIENT
         this.platz += this.isCrit(this.kapaEssen, this.kapaEssenCrit, this.critchanceEssen)
         if (this.platz > 100) this.platz = 100
-
-        // SERVER
-        this.restService.get('add.php', [`userid=${this.userid}`, 'type=1', `score=${this.scoreEssen}`])  
       }
     },
 
@@ -102,16 +102,17 @@ export default {
       if (!this.gcd) {
         // START CD
         this.startGcd()
-        
-        // CLIENT
-        const crit = this.isCrit(this.kapaTrinken, this.kapaTrinkenCrit, this.critchanceTrinken)
-        this.pegel += crit
-        if (this.pegel > 100) this.pegel = 100
 
+        const crit = this.isCrit(this.kapaTrinken, this.kapaTrinkenCrit, this.critchanceTrinken)
+        
         // SERVER
         if (crit === this.kapaTrinkenCrit) {
           this.restService.get('add.php', [`userid=${this.userid}`, 'type=0', `score=${this.scoreTrinken}`])
         }
+
+        // CLIENT
+        this.pegel += crit
+        if (this.pegel > 100) this.pegel = 100
       }
     },
 
@@ -120,13 +121,13 @@ export default {
         // START CD
         this.startGcd()
 
+        // SERVER
+        const amount = this.werteKotzen.get(Math.floor(this.platz / 10))
+        this.restService.get('add.php', [`userid=${this.userid}`, 'type=2', `amount=${amount}`, `score=${amount * this.scoreKotzen}`])
+
         // CLIENT
         this.platz = 0
         this.pegel = 0
-
-        // SERVER
-        let amount = this.werteKotzen.get(Math.floor(this.platz / 10))
-        this.restService.get('add.php', [`userid=${this.userid}`, 'type=2', `amount=${amount}`, `score=${amount * this.scoreKotzen}`])
       }
     },
 
