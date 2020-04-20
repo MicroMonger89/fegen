@@ -22,8 +22,9 @@ export default {
   },
   methods: {
     getWipeCount (type) {
-      if (this.wipes.length > 0) {
-        return this.wipes.find(wipe => wipe.type === type).count
+      if (this.wipes && this.wipes.length > 0) {
+        const wipe = this.wipes.find(wipe => wipe.type === type)
+        if (wipe) return wipe.count
       }
       return 0
     },
@@ -51,6 +52,11 @@ export default {
     div {
       margin: 0 3px;
       font-size: 20px;
+    }
+
+    .count {
+      width: 30px;
+      text-align: right;
     }
 
     .image {

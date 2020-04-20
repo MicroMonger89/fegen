@@ -283,6 +283,7 @@ export default {
   }
 
   #kotz {
+    pointer-events: none;
     position: fixed;
     top: 0;
     width: 100vw;
